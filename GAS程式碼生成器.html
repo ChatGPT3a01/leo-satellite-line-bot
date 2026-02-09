@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAS 程式碼生成器 - 低軌衛星資訊應用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%);
+            min-height: 100vh;
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 22, 40, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 10000;
+        }
+
+        .nav-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .main-container {
+            padding-top: 80px;
+            padding-bottom: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header .icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .page-header h1 {
+            color: #fff;
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .page-header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h2 {
+            color: #1e3c72;
+            font-size: 28px;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #1e3c72;
+        }
+
+        .card h3 {
+            color: #1e3c72;
+            font-size: 22px;
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .card p, .card li {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        /* 架構說明 */
+        .architecture {
+            background: linear-gradient(135deg, #f0f4ff, #e8f5e9);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .architecture .flow {
+            font-size: 20px;
+            line-height: 2.2;
+            color: #333;
+        }
+
+        .architecture .flow .arrow {
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        /* 輸入欄位 */
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .input-group .label-hint {
+            font-size: 14px;
+            color: #888;
+            font-weight: normal;
+            margin-left: 8px;
+        }
+
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #2a5298;
+            box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
+        }
+
+        .input-group input::placeholder {
+            color: #bbb;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* 生成按鈕 */
+        .generate-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            font-size: 22px;
+            font-weight: bold;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(30, 60, 114, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(30, 60, 114, 0.5);
+        }
+
+        /* 輸出區域 */
+        .output-section {
+            display: none;
+        }
+
+        .output-section.show {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .output-header h2 {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .copy-btn {
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #6c757d, #868e96);
+        }
+
+        .code-output {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 30px;
+            border-radius: 15px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            white-space: pre;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-output::-webkit-scrollbar { width: 8px; height: 8px; }
+        .code-output::-webkit-scrollbar-track { background: #1e1e2e; }
+        .code-output::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+        .code-output .comment { color: #6c7086; }
+        .code-output .keyword { color: #cba6f7; }
+        .code-output .string { color: #a6e3a1; }
+        .code-output .number { color: #fab387; }
+
+        /* 部署步驟 */
+        .deploy-steps {
+            counter-reset: deploy-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .deploy-steps li {
+            counter-increment: deploy-counter;
+            position: relative;
+            padding-left: 55px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .deploy-steps li::before {
+            content: counter(deploy-counter);
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .deploy-steps li strong { color: #1e3c72; }
+
+        .deploy-steps li code {
+            background: #f0f2f5;
+            color: #d63384;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 15px;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* 提示框 */
+        .box {
+            padding: 20px 25px;
+            border-radius: 12px;
+            border-left: 6px solid;
+            margin: 20px 0;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .info { background: #e3f2fd; border-color: #2196f3; color: #0d47a1; }
+        .warning { background: #fff3cd; border-color: #ffc107; color: #856404; }
+        .success { background: #d4edda; border-color: #28a745; color: #155724; }
+
+        /* LINE 對話預覽 */
+        .chat-preview {
+            background: #7ecbcc;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            max-width: 400px;
+        }
+
+        .chat-bubble-user {
+            background: #a8e063;
+            padding: 12px 16px;
+            border-radius: 18px 18px 4px 18px;
+            margin-bottom: 12px;
+            margin-left: 100px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .chat-bubble-bot {
+            background: #fff;
+            padding: 14px 16px;
+            border-radius: 18px 18px 18px 4px;
+            margin-bottom: 12px;
+            margin-right: 40px;
+            font-size: 14px;
+            color: #333;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .validation-msg {
+            font-size: 14px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .validation-msg.error {
+            color: #dc3545;
+            display: block;
+        }
+
+        .copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+            padding: 20px 0;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <div class="nav-title">&#x26A1; GAS 程式碼生成器</div>
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn">&#x1F3E0; 首頁</a>
+            <a href="Part3_衛星資料API實作.html" class="nav-btn">&#x1F4E1; Part 3</a>
+            <a href="Part5_延伸應用與總結.html" class="nav-btn">&#x1F3AF; Part 5</a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="page-header">
+            <span class="icon">&#x1F6F0;&#xFE0F;</span>
+            <h1>GAS 程式碼生成器</h1>
+            <p>填入 LINE Token，一鍵生成互動式衛星氣象聊天機器人</p>
+        </div>
+
+        <!-- 系統架構說明 -->
+        <div class="card">
+            <h2>&#x1F4AC; 這個機器人可以做什麼？</h2>
+            <p>你的 LINE Bot 會變成一個<strong>互動式衛星氣象查詢機器人</strong>：</p>
+            <div class="architecture">
+                <div class="flow">
+                    &#x1F4F1; 你在 LINE 輸入「台南」<br>
+                    <span class="arrow">&#x2B07;&#xFE0F;</span><br>
+                    &#x1F916; Bot 自動呼叫 NASA 衛星 API 取得台南的氣象資料<br>
+                    <span class="arrow">&#x2B07;&#xFE0F;</span><br>
+                    &#x1F4E8; Bot 立刻回覆你「衛星觀測日報」
+                </div>
+            </div>
+
+            <h3>&#x1F4AC; LINE 對話長這樣</h3>
+            <div class="chat-preview">
+                <div class="chat-bubble-user">台南</div>
+                <div class="chat-bubble-bot">&#x1F6F0;&#xFE0F; 衛星觀測日報
+&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;
+&#x1F4CD; 地點：台南
+&#x1F4C5; 日期：20260210
+&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;
+&#x1F321;&#xFE0F; 氣溫：18.5&#xB0;C（&#x1F342; 涼爽）
+&#x1F4CA; 最高/最低：22.3&#xB0;C / 15.1&#xB0;C
+&#x1F4A7; 降雨量：0.2 mm（&#x2600;&#xFE0F; 無降雨）
+&#x1F4A8; 相對濕度：72%
+&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;
+&#x1F4AC; 衛星資料分析：
+&#x2022; 氣溫涼爽，日夜溫差 7.2&#xB0;C，建議帶薄外套
+&#x2022; 今日無降雨，適合戶外活動
+&#x2022; 濕度 72% 適中，體感舒適
+&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;
+&#x1F4E1; NASA POWER &#x4F4E;&#x8ECB;&#x885B;&#x661F;&#x89C0;&#x6E2C;</div>
+                <div class="chat-bubble-user">25.03, 121.57</div>
+                <div class="chat-bubble-bot">&#x1F6F0;&#xFE0F; 衛星觀測日報
+&#x1F4CD; 地點：25.03&#xB0;N, 121.57&#xB0;E
+...</div>
+            </div>
+
+            <div class="box info">
+                <p>&#x1F4A1; 支援兩種查詢方式：<br>
+                &#x2460; 輸入<strong>地點名稱</strong>：台北、台南、高雄、台中、東京...<br>
+                &#x2461; 輸入<strong>經緯度座標</strong>：例如 <code style="font-size:15px;">25.03, 121.57</code></p>
+            </div>
+        </div>
+
+        <!-- 輸入區域 -->
+        <div class="card" id="inputCard">
+            <h2>&#x1F4DD; 填入你的 LINE Token</h2>
+
+            <div class="input-group">
+                <label>&#x1F511; LINE Channel Access Token <span class="label-hint">（必填，在 LINE Developers 取得）</span></label>
+                <input type="text" id="lineToken" placeholder="貼上你的 Channel Access Token（一串很長的英數字）">
+                <div class="validation-msg" id="tokenMsg"></div>
+            </div>
+
+            <div class="box info">
+                <p>&#x1F4A1; 只需要填 <strong>Channel Access Token</strong> 這一個值！經緯度不用填，使用者直接在 LINE 對話中輸入地點就可以了。</p>
+            </div>
+
+            <button class="generate-btn" onclick="generateCode()">&#x1F680; 生成程式碼</button>
+        </div>
+
+        <!-- 輸出區域 -->
+        <div class="card output-section" id="outputSection">
+            <div class="output-header">
+                <h2>&#x2705; 程式碼已生成！</h2>
+                <button class="copy-btn" id="copyBtn" onclick="copyCode()">&#x1F4CB; 複製程式碼</button>
+            </div>
+            <div class="code-output" id="codeOutput"></div>
+        </div>
+
+        <!-- 部署步驟 -->
+        <div class="card output-section" id="deploySection">
+            <h2>&#x1F680; 接下來：部署你的機器人（3 分鐘）</h2>
+
+            <h3>Step A：把程式碼貼到 GAS</h3>
+            <ol class="deploy-steps">
+                <li>到 <a href="https://script.google.com/" target="_blank" style="color:#2a5298; font-weight:bold;">Google Apps Script</a> 開啟你的專案</li>
+                <li>全選編輯器內容（<strong>Ctrl+A</strong>），貼上剛才複製的程式碼（<strong>Ctrl+V</strong>）</li>
+                <li>按 <strong>Ctrl+S</strong> 儲存</li>
+            </ol>
+
+            <h3>Step B：部署為網路應用程式</h3>
+            <ol class="deploy-steps">
+                <li>點擊右上角的 <strong>「部署」</strong> &#x2192; <strong>「新增部署作業」</strong></li>
+                <li>左邊類型選擇 &#x2699;&#xFE0F; &#x2192; <strong>「網頁應用程式」</strong></li>
+                <li>說明填：<code>衛星氣象機器人</code>（隨意）</li>
+                <li>「執行身分」選：<strong>我</strong></li>
+                <li>「誰可以存取」選：<strong>所有人</strong></li>
+                <li>點擊 <strong>「部署」</strong></li>
+                <li>第一次會要求授權，點選「授予存取權」&#x2192; 選你的帳號 &#x2192; 「進階」&#x2192; 「前往（不安全）」&#x2192; 「允許」</li>
+                <li>部署完成！<strong>複製「網頁應用程式網址」</strong>（很重要！）</li>
+            </ol>
+
+            <div class="box warning">
+                <p>&#x26A0;&#xFE0F; 那串網址長得像：<br><code style="font-size:14px; word-break:break-all;">https://script.google.com/macros/s/AKfycbx.../exec</code><br>請先複製保存！</p>
+            </div>
+
+            <h3>Step C：設定 LINE Webhook</h3>
+            <ol class="deploy-steps">
+                <li>回到 <a href="https://developers.line.biz/" target="_blank" style="color:#2a5298; font-weight:bold;">LINE Developers</a>，進入你的 Channel 設定頁</li>
+                <li>點上方的 <strong>「Messaging API」</strong> 分頁</li>
+                <li>找到 <strong>「Webhook URL」</strong>，點擊 <strong>「Edit」</strong></li>
+                <li>把剛才複製的 GAS 網址貼上去，點 <strong>「Update」</strong></li>
+                <li>打開 <strong>「Use webhook」</strong> 開關（變成綠色）</li>
+                <li>點擊 <strong>「Verify」</strong> 按鈕，看到 <strong>「Success」</strong> 就完成了！</li>
+            </ol>
+
+            <div class="box warning">
+                <p>&#x26A0;&#xFE0F; 同一個頁面，請確認：<br>
+                &#x2022; <strong>「Auto-reply messages」</strong> 設定為 <strong>Disabled</strong>（關閉自動回覆）<br>
+                &#x2022; 不然 LINE 會發重複的預設訊息</p>
+            </div>
+
+            <h3>Step D：測試你的機器人！</h3>
+            <ol class="deploy-steps">
+                <li>打開手機 LINE，找到你的 Bot</li>
+                <li>輸入 <strong>「台南」</strong> 送出</li>
+                <li>等幾秒鐘... Bot 就會回覆衛星觀測日報！&#x1F389;</li>
+            </ol>
+
+            <div class="box success">
+                <p>&#x1F389; <strong>恭喜！你的衛星氣象聊天機器人完成了！</strong><br><br>
+                試試看輸入不同的地點：台北、高雄、東京、紐約...<br>
+                也可以輸入任意座標：<code>35.68, 139.69</code></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">&copy; 2026 低軌衛星資訊應用 | Made with 曾慶良(阿亮老師) &#x2764;&#xFE0F;</div>
+
+    <script>
+        function validateInputs() {
+            const token = document.getElementById('lineToken').value.trim();
+            const tokenMsg = document.getElementById('tokenMsg');
+            tokenMsg.className = 'validation-msg';
+
+            if (!token) {
+                tokenMsg.textContent = '請填入 LINE Channel Access Token';
+                tokenMsg.className = 'validation-msg error';
+                return false;
+            }
+            return true;
+        }
+
+        function generateCode() {
+            if (!validateInputs()) return;
+
+            const token = document.getElementById('lineToken').value.trim();
+            const code = generateGASCode(token);
+
+            document.getElementById('codeOutput').innerHTML = syntaxHighlight(code);
+            document.getElementById('outputSection').classList.add('show');
+            document.getElementById('deploySection').classList.add('show');
+
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.innerHTML = '&#x1F4CB; 複製程式碼';
+            copyBtn.classList.remove('copied');
+
+            setTimeout(() => {
+                document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function generateGASCode(token) {
+            return `// ===================================
+// \u{1F6F0}\u{FE0F} \u4F4E\u8ECB\u885B\u661F\u6C23\u8C61\u67E5\u8A62\u6A5F\u5668\u4EBA
+// LINE \u4E92\u52D5\u5F0F\u885B\u661F\u8CC7\u6599\u63A8\u64AD\u7CFB\u7D71
+// ===================================
+
+// === \u{1F4CC} \u8A2D\u5B9A\u5340 ===
+const LINE_TOKEN = '${token}';
+
+// === \u{1F5FA}\u{FE0F} \u9810\u8A2D\u5730\u9EDE\uFF08\u4F60\u53EF\u4EE5\u81EA\u7531\u65B0\u589E\uFF09 ===
+const LOCATIONS = {
+  '\u53F0\u5317': { lat: 25.03, lon: 121.57 },
+  '\u53F0\u5357': { lat: 23.00, lon: 120.20 },
+  '\u9AD8\u96C4': { lat: 22.63, lon: 120.30 },
+  '\u53F0\u4E2D': { lat: 24.15, lon: 120.67 },
+  '\u65B0\u7AF9': { lat: 24.80, lon: 120.97 },
+  '\u82B1\u84EE': { lat: 23.97, lon: 121.60 },
+  '\u6771\u4EAC': { lat: 35.68, lon: 139.69 },
+  '\u7D10\u7D04': { lat: 40.71, lon: -74.01 },
+  '\u502B\u6566': { lat: 51.51, lon: -0.13 },
+};
+
+// =============================================
+// \u{1F4E8} LINE Webhook\uFF08\u7528\u6236\u50B3\u8A0A\u606F\u6642\u81EA\u52D5\u89F8\u767C\uFF09
+// =============================================
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const events = data.events;
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
+    if (event.type === 'message' && event.message.type === 'text') {
+      handleTextMessage(event);
+    }
+  }
+
+  return ContentService.createTextOutput('OK');
+}
+
+// === \u{1F4AC} \u8655\u7406\u7528\u6236\u7684\u6587\u5B57\u8A0A\u606F ===
+function handleTextMessage(event) {
+  const text = event.message.text.trim();
+  const replyToken = event.replyToken;
+
+  // \u67E5\u8A62\u9810\u8A2D\u5730\u9EDE\uFF08\u4F8B\u5982\u8F38\u5165\u300C\u53F0\u5357\u300D\uFF09
+  if (LOCATIONS[text]) {
+    const loc = LOCATIONS[text];
+    const data = getSatelliteData(loc.lat, loc.lon);
+    const message = interpretData(data, text);
+    replyToLINE(replyToken, message);
+    return;
+  }
+
+  // \u67E5\u8A62\u81EA\u8A02\u5EA7\u6A19\uFF08\u4F8B\u5982\u8F38\u5165\u300C23.0, 120.2\u300D\uFF09
+  const match = text.match(/^([\\d.-]+)\\s*[,\uFF0C\\s]\\s*([\\d.-]+)$/);
+  if (match) {
+    const lat = parseFloat(match[1]);
+    const lon = parseFloat(match[2]);
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      const data = getSatelliteData(lat, lon);
+      const message = interpretData(data, lat + '\u00B0N, ' + lon + '\u00B0E');
+      replyToLINE(replyToken, message);
+      return;
+    }
+  }
+
+  // \u5176\u4ED6\u8F38\u5165 \u2192 \u986F\u793A\u4F7F\u7528\u8AAA\u660E
+  replyToLINE(replyToken, getHelpMessage());
+}
+
+// === \u{1F4D6} \u4F7F\u7528\u8AAA\u660E ===
+function getHelpMessage() {
+  const names = Object.keys(LOCATIONS);
+  return '\u{1F6F0}\u{FE0F} \u885B\u661F\u6C23\u8C61\u67E5\u8A62\u6A5F\u5668\u4EBA\\n' +
+    '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n\\n' +
+    '\u{1F4CD} \u8F38\u5165\u5730\u9EDE\u540D\u7A31\uFF1A\\n' +
+    names.join('\u3001') + '\\n\\n' +
+    '\u{1F4CD} \u6216\u8F38\u5165\u7D93\u7DEF\u5EA6\uFF1A\\n' +
+    '\u4F8B\uFF1A23.0, 120.2\\n\\n' +
+    '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n' +
+    '\u{1F4A1} \u5728 Google Maps \u6309\u53F3\u9375\u5373\u53EF\u53D6\u5F97\u5EA7\u6A19';
+}
+
+// =============================================
+// \u{1F4E1} LINE \u56DE\u8986\u8A0A\u606F\uFF08Webhook \u7528\uFF09
+// =============================================
+function replyToLINE(replyToken, message) {
+  const url = 'https://api.line.me/v2/bot/message/reply';
+  const payload = {
+    replyToken: replyToken,
+    messages: [{ type: 'text', text: message }]
+  };
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'Authorization': 'Bearer ' + LINE_TOKEN },
+    payload: JSON.stringify(payload)
+  };
+  UrlFetchApp.fetch(url, options);
+}
+
+// =============================================
+// \u{1F6F0}\u{FE0F} \u53D6\u5F97 NASA \u885B\u661F\u89C0\u6E2C\u8CC7\u6599
+// =============================================
+function getSatelliteData(lat, lon) {
+  const today = new Date();
+  const end = Utilities.formatDate(today, 'GMT+8', 'yyyyMMdd');
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const start = Utilities.formatDate(weekAgo, 'GMT+8', 'yyyyMMdd');
+
+  const url = 'https://power.larc.nasa.gov/api/temporal/daily/point' +
+    '?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M' +
+    '&community=AG' +
+    '&longitude=' + lon +
+    '&latitude=' + lat +
+    '&start=' + start +
+    '&end=' + end +
+    '&format=JSON';
+
+  const response = UrlFetchApp.fetch(url);
+  return JSON.parse(response.getContentText());
+}
+
+// =============================================
+// \u{1F4CA} \u89E3\u8B80\u885B\u661F\u8CC7\u6599\uFF08\u6578\u5B57 \u2192 \u4EBA\u8A71\uFF09
+// =============================================
+function interpretData(data, locationName) {
+  const params = data.properties.parameter;
+  const dates = Object.keys(params.T2M);
+  const latestDate = dates[dates.length - 1];
+
+  const temp = params.T2M[latestDate];
+  const tempMax = params.T2M_MAX[latestDate];
+  const tempMin = params.T2M_MIN[latestDate];
+  const rain = params.PRECTOTCORR[latestDate];
+  const humidity = params.RH2M[latestDate];
+
+  let tempDesc = '';
+  if (temp >= 35) tempDesc = '\u{1F525} \u6975\u5EA6\u9AD8\u6EAB';
+  else if (temp >= 30) tempDesc = '\u2600\uFE0F \u708E\u71B1';
+  else if (temp >= 25) tempDesc = '\u{1F324}\uFE0F \u6EAB\u6696';
+  else if (temp >= 20) tempDesc = '\u{1F60A} \u8212\u9069';
+  else if (temp >= 15) tempDesc = '\u{1F342} \u6DBC\u723D';
+  else tempDesc = '\u{1F976} \u5BD2\u51B7';
+
+  let rainDesc = '';
+  if (rain >= 50) rainDesc = '\u{1F30A} \u8C6A\u5927\u96E8';
+  else if (rain >= 20) rainDesc = '\u{1F327}\uFE0F \u5927\u96E8';
+  else if (rain >= 5) rainDesc = '\u{1F326}\uFE0F \u4E2D\u96E8';
+  else if (rain >= 1) rainDesc = '\u{1F302} \u5C0F\u96E8';
+  else rainDesc = '\u2600\uFE0F \u7121\u964D\u96E8';
+
+  // \u{1F4AC} \u751F\u6D3B\u5316\u5206\u6790\u5EFA\u8B70
+  const tempDiff = tempMax - tempMin;
+  let analysis = [];
+
+  // \u6C23\u6EAB\u5206\u6790
+  if (temp >= 35) analysis.push('\u2022 \u6975\u7AEF\u9AD8\u6EAB\uFF0C\u907F\u514D\u9577\u6642\u9593\u6236\u5916\u6D3B\u52D5\uFF0C\u591A\u88DC\u5145\u6C34\u5206');
+  else if (temp >= 30) analysis.push('\u2022 \u5929\u6C23\u708E\u71B1\uFF0C\u6CE8\u610F\u9632\u66EC\u8207\u6C34\u5206\u88DC\u5145');
+  else if (temp >= 25) analysis.push('\u2022 \u6C23\u6EAB\u6EAB\u6696\u8212\u9069\uFF0C\u9069\u5408\u6236\u5916\u6D3B\u52D5');
+  else if (temp >= 20) analysis.push('\u2022 \u6C23\u6EAB\u8212\u9069\u5B9C\u4EBA\uFF0C\u9069\u5408\u5404\u7A2E\u6D3B\u52D5');
+  else if (temp >= 15) analysis.push('\u2022 \u6C23\u6EAB\u6DBC\u723D\uFF0C\u5EFA\u8B70\u651C\u5E36\u8584\u5916\u5957');
+  else analysis.push('\u2022 \u5929\u6C23\u5BD2\u51B7\uFF0C\u8ACB\u6CE8\u610F\u4FDD\u6696\uFF0C\u7A7F\u8457\u4FDD\u6696\u8863\u7269');
+
+  // \u65E5\u591C\u6EAB\u5DEE\u5206\u6790
+  if (tempDiff > 10) analysis.push('\u2022 \u65E5\u591C\u6EAB\u5DEE\u5927\uFF08' + tempDiff.toFixed(1) + '\u00B0C\uFF09\uFF0C\u65E9\u665A\u8A18\u5F97\u52A0\u8863');
+  else if (tempDiff > 5) analysis.push('\u2022 \u65E5\u591C\u6EAB\u5DEE ' + tempDiff.toFixed(1) + '\u00B0C\uFF0C\u5EFA\u8B70\u6D0B\u8525\u5F0F\u7A7F\u8457');
+
+  // \u964D\u96E8\u5206\u6790
+  if (rain >= 50) analysis.push('\u2022 \u964D\u96E8\u91CF\u6975\u5927\uFF0C\u8ACB\u907F\u514D\u5916\u51FA\uFF0C\u6CE8\u610F\u6C34\u60A3');
+  else if (rain >= 20) analysis.push('\u2022 \u964D\u96E8\u91CF\u8F03\u5927\uFF0C\u5916\u51FA\u8ACB\u651C\u5E36\u96E8\u5177');
+  else if (rain >= 5) analysis.push('\u2022 \u6709\u4E2D\u91CF\u964D\u96E8\uFF0C\u5EFA\u8B70\u5E36\u5098');
+  else if (rain >= 1) analysis.push('\u2022 \u5FAE\u91CF\u964D\u96E8\uFF0C\u53EF\u5099\u628A\u5098');
+  else analysis.push('\u2022 \u7121\u964D\u96E8\uFF0C\u9069\u5408\u6236\u5916\u6D3B\u52D5');
+
+  // \u6FD5\u5EA6\u5206\u6790
+  if (humidity > 85) analysis.push('\u2022 \u6FD5\u5EA6\u5F88\u9AD8\uFF08' + Math.round(humidity) + '%\uFF09\uFF0C\u9AD4\u611F\u60B6\u6082\uFF0C\u8863\u7269\u4E0D\u6613\u4E7E');
+  else if (humidity > 70) analysis.push('\u2022 \u6FD5\u5EA6\u9069\u4E2D\uFF08' + Math.round(humidity) + '%\uFF09\uFF0C\u9AD4\u611F\u8212\u9069');
+  else if (humidity < 40) analysis.push('\u2022 \u6FD5\u5EA6\u504F\u4F4E\uFF08' + Math.round(humidity) + '%\uFF09\uFF0C\u6CE8\u610F\u76AE\u819A\u4FDD\u6FD5');
+
+  return '\u{1F6F0}\uFE0F \u885B\u661F\u89C0\u6E2C\u65E5\u5831\\n' +
+    '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n' +
+    '\u{1F4CD} \u5730\u9EDE\uFF1A' + locationName + '\\n' +
+    '\u{1F4C5} \u65E5\u671F\uFF1A' + latestDate + '\\n' +
+    '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n' +
+    '\u{1F321}\uFE0F \u6C23\u6EAB\uFF1A' + temp.toFixed(1) + '\u00B0C\uFF08' + tempDesc + '\uFF09\\n' +
+    '\u{1F4CA} \u6700\u9AD8/\u6700\u4F4E\uFF1A' + tempMax.toFixed(1) + '\u00B0C / ' + tempMin.toFixed(1) + '\u00B0C\\n' +
+    '\u{1F4A7} \u964D\u96E8\u91CF\uFF1A' + rain.toFixed(1) + ' mm\uFF08' + rainDesc + '\uFF09\\n' +
+    '\u{1F4A8} \u76F8\u5C0D\u6FD5\u5EA6\uFF1A' + Math.round(humidity) + '%\\n' +
+    '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n' +
+    '\u{1F4AC} \u885B\u661F\u8CC7\u6599\u5206\u6790\uFF1A\\n' +
+    analysis.join('\\n') + '\\n' +
+    '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n' +
+    '\u{1F4E1} NASA POWER \u4F4E\u8ECB\u885B\u661F\u89C0\u6E2C';
+}
+
+// === \u{1F9EA} \u6E2C\u8A66\u51FD\u5F0F ===
+function testAPI() {
+  const data = getSatelliteData(23.0, 120.2);
+  Logger.log(JSON.stringify(data, null, 2));
+  const msg = interpretData(data, '\u53F0\u5357');
+  Logger.log(msg);
+}`;
+        }
+
+        function syntaxHighlight(code) {
+            let html = code
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            html = html.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
+            html = html.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="string">$1</span>');
+
+            const keywords = ['const', 'let', 'var', 'function', 'if', 'else', 'return', 'new', 'for'];
+            keywords.forEach(kw => {
+                html = html.replace(new RegExp('\\b(' + kw + ')\\b', 'g'), '<span class="keyword">$1</span>');
+            });
+
+            html = html.replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+
+            return html;
+        }
+
+        function copyCode() {
+            const token = document.getElementById('lineToken').value.trim();
+            const code = generateGASCode(token);
+
+            navigator.clipboard.writeText(code).then(() => {
+                showCopied();
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showCopied();
+            });
+        }
+
+        function showCopied() {
+            const btn = document.getElementById('copyBtn');
+            btn.innerHTML = '&#x2705; 已複製！';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = '&#x1F4CB; 複製程式碼';
+                btn.classList.remove('copied');
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>

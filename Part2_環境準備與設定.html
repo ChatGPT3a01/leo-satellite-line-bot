@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 2 - 環境準備與設定</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 導航列 */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 22, 40, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 10000;
+        }
+
+        .nav-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* 投影片容器 */
+        .slides-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            padding-top: 60px;
+        }
+
+        .slide {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* 內容卡片 */
+        .content-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 60px;
+            max-width: 1400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .content-card::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content-card::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content-card::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        /* 標題樣式 */
+        h1 {
+            color: #1e3c72;
+            font-size: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        h2 {
+            color: #2a5298;
+            font-size: 38px;
+            border-bottom: 3px solid #1e3c72;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            color: #1e3c72;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        p, li {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul, ol {
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 程式碼樣式 */
+        code {
+            background: #f0f2f5;
+            color: #d63384;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 18px;
+            line-height: 1.6;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        pre code {
+            background: transparent;
+            color: #abb2bf;
+            padding: 0;
+        }
+
+        /* Box 樣式 */
+        .box {
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 6px solid;
+            margin: 20px 0;
+        }
+
+        .info {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #84fab0, #8fd3f4);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        /* Grid 樣式 */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+
+        .concept-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .concept-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .concept-card p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #1e3c72;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 封面樣式 */
+        .cover {
+            text-align: center;
+        }
+
+        .cover .subtitle {
+            font-size: 22px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+
+        .cover h1 {
+            font-size: 64px;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cover .description {
+            font-size: 24px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 40px;
+        }
+
+        .cover .tags {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .cover .tag {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        /* 導航箭頭 */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: all 0.3s ease;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-arrow.left {
+            left: 20px;
+        }
+
+        .nav-arrow.right {
+            right: 20px;
+        }
+
+        /* 頁碼指示器 */
+        .page-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 9999;
+        }
+
+        .page-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-dot.active {
+            background: #fff;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .page-dot:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 版權 */
+        .copyright {
+            position: fixed;
+            bottom: 8px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+            z-index: 9999;
+        }
+
+        /* 封面動畫 */
+        .cover .icon-large {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* 步驟樣式 */
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 18px;
+            font-size: 20px;
+            line-height: 1.8;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .sub-list {
+            list-style: disc;
+            padding-left: 30px;
+            margin-top: 10px;
+        }
+
+        .sub-list li {
+            padding-left: 0;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .sub-list li::before {
+            display: none;
+        }
+
+        .big-title {
+            font-size: 30px;
+            color: #1e3c72;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(120deg, #e3f2fd, #f0f4ff);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 導航列 -->
+    <div class="nav-bar">
+        <div class="nav-title">&#x2699;&#xFE0F; Part 2 - 環境準備與設定</div>
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn">&#x1F3E0; 首頁</a>
+            <button class="nav-btn" onclick="toggleFullscreen()">&#x1F5A5;&#xFE0F; 全螢幕</button>
+            <a href="https://www.facebook.com/?locale=zh_TW" target="_blank" class="nav-btn">&#x1F4D8; FB</a>
+            <a href="https://www.youtube.com/@Liang-yt02" target="_blank" class="nav-btn">&#x1F3A5; YT</a>
+        </div>
+    </div>
+
+    <!-- 投影片 -->
+    <div class="slides-container">
+
+        <!-- Slide 1: 封面 -->
+        <div class="slide active" id="slide-1">
+            <div class="content-card cover">
+                <span class="icon-large">&#x2699;&#xFE0F;</span>
+                <div class="subtitle">Environment Setup</div>
+                <h1>Part 2: 環境準備與設定</h1>
+                <p class="description">「工欲善其事，必先利其器 — 10 分鐘搞定所有工具」</p>
+                <div class="tags">
+                    <span class="tag">LINE Messaging API</span>
+                    <span class="tag">Google Apps Script</span>
+                    <span class="tag">API Key</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: 工具總覽 -->
+        <div class="slide" id="slide-2">
+            <div class="content-card">
+                <h2>&#x1F9F0; 今天需要的工具</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>&#x1F4BB; Google Apps Script</h3>
+                        <p>Google 免費提供的雲端程式環境，不用安裝任何軟體，打開瀏覽器就能寫程式</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x1F6F0;&#xFE0F; NASA POWER API</h3>
+                        <p>美國太空總署提供的衛星觀測資料 API，完全免費，不需要申請 API Key</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x1F4F1; LINE Messaging API</h3>
+                        <p>LINE 官方提供的訊息推播服務，可以讓程式自動發送訊息到你的 LINE</p>
+                    </div>
+                </div>
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; 請確認你有：① Google 帳號 ② LINE 帳號，這是今天唯二的前置需求！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: NASA POWER API 串接說明 -->
+        <div class="slide" id="slide-3">
+            <div class="content-card">
+                <h2>&#x1F6F0;&#xFE0F; 我們要串接哪個 API？怎麼串？</h2>
+                <p>我們要串接的是 <strong>NASA POWER API</strong>（美國太空總署提供的低軌衛星觀測資料 API）</p>
+
+                <div class="big-title">&#x1F310; 官方網站：<a href="https://power.larc.nasa.gov/" target="_blank" style="color:#1e3c72;">https://power.larc.nasa.gov/</a></div>
+
+                <h3>&#x1F4CC; 串接流程（超簡單，只有 3 步）</h3>
+                <div class="concept-grid">
+                    <div class="concept-card" style="border-left:4px solid #2196f3;">
+                        <h3>&#x2776; 組裝 API 網址</h3>
+                        <p>把「我要什麼資料」「哪個地點」「哪段時間」填進網址裡</p>
+                    </div>
+                    <div class="concept-card" style="border-left:4px solid #ff9800;">
+                        <h3>&#x2777; 發送請求</h3>
+                        <p>用瀏覽器打開網址（手動測試）<br>或用程式自動發送（正式串接）</p>
+                    </div>
+                    <div class="concept-card" style="border-left:4px solid #4caf50;">
+                        <h3>&#x2778; 取得 JSON 資料</h3>
+                        <p>NASA 回傳一包 JSON 格式的衛星觀測數據，直接拿來用！</p>
+                    </div>
+                </div>
+
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; <strong>跟一般 API 不一樣的地方：</strong></p>
+                    <ul style="margin:10px 0 0 20px;">
+                        <li>&#x274C; <strong>不用</strong>去官網註冊帳號</li>
+                        <li>&#x274C; <strong>不用</strong>申請 API Key</li>
+                        <li>&#x274C; <strong>不用</strong>付費</li>
+                        <li>&#x2705; <strong>只要</strong>知道 API 網址，直接呼叫就有資料！</li>
+                    </ul>
+                </div>
+
+                <div class="box info">
+                    <p>&#x1F4A1; API 網址入口：<br>
+                    <code style="font-size:16px; word-break:break-all;">https://power.larc.nasa.gov/api/temporal/daily/point?parameters=...&amp;longitude=...&amp;latitude=...</code><br><br>
+                    下一頁我們馬上來試！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: 動手試試看！用瀏覽器呼叫 API -->
+        <div class="slide" id="slide-4">
+            <div class="content-card">
+                <h2>&#x1F590;&#xFE0F; 動手試試看！用瀏覽器呼叫 API</h2>
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; 這是最重要的一步！請跟著做</p>
+                </div>
+                <ol class="step-list">
+                    <li>打開瀏覽器（Chrome 或 Edge）</li>
+                    <li>複製下方整段網址（不要漏掉任何字）</li>
+                    <li>貼到瀏覽器的網址列</li>
+                    <li>按下 Enter</li>
+                    <li>你會看到一大串文字，那就是低軌衛星觀測到的資料！</li>
+                </ol>
+                <h3>&#x1F447; 複製這串網址</h3>
+<pre><code>https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M&amp;community=AG&amp;longitude=120.2&amp;latitude=23.0&amp;start=20260201&amp;end=20260207&amp;format=JSON</code></pre>
+                <div class="box success">
+                    <p>&#x1F389; 如果你看到一堆大括號和數字，恭喜！你剛剛成功用「低軌衛星觀測資料 API」取得了台南地區一週的氣象資料！</p>
+                </div>
+                <div class="box info">
+                    <p>&#x1F4A1; 看不懂那些文字沒關係！接下來我們會用程式幫你「翻譯」成看得懂的內容。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: API 網址逐段拆解 -->
+        <div class="slide" id="slide-5">
+            <div class="content-card">
+                <h2>&#x1F50D; API 網址長什麼樣？一段一段拆開看</h2>
+                <p>剛才那串網址看起來很長，其實是「主網址」加上「你的需求」組合而成：</p>
+<pre><code>主網址：
+https://power.larc.nasa.gov/api/temporal/daily/point
+
+加上你的需求（用 ? 和 &amp; 連接）：
+
+?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M   &#x2190; 要哪些觀測資料
+&amp;community=AG                                        &#x2190; 資料類別（農業）
+&amp;longitude=120.2                                     &#x2190; 經度（台南）
+&amp;latitude=23.0                                       &#x2190; 緯度（台南）
+&amp;start=20260201                                      &#x2190; 開始日期
+&amp;end=20260207                                        &#x2190; 結束日期
+&amp;format=JSON                                         &#x2190; 回傳格式</code></pre>
+                <table>
+                    <tr>
+                        <th>參數</th>
+                        <th>意思</th>
+                        <th>你可以改什麼</th>
+                    </tr>
+                    <tr>
+                        <td>parameters</td>
+                        <td>想要哪些觀測資料</td>
+                        <td>T2M=氣溫, PRECTOTCORR=降雨, RH2M=濕度</td>
+                    </tr>
+                    <tr>
+                        <td>community</td>
+                        <td>資料應用領域</td>
+                        <td>AG=農業（最常用）</td>
+                    </tr>
+                    <tr>
+                        <td>longitude</td>
+                        <td>經度</td>
+                        <td>例：121.5（台北）、120.2（台南）</td>
+                    </tr>
+                    <tr>
+                        <td>latitude</td>
+                        <td>緯度</td>
+                        <td>例：25.0（台北）、23.0（台南）</td>
+                    </tr>
+                    <tr>
+                        <td>start / end</td>
+                        <td>日期範圍</td>
+                        <td>格式：YYYYMMDD（例：20260210）</td>
+                    </tr>
+                    <tr>
+                        <td>format</td>
+                        <td>回傳格式</td>
+                        <td>JSON（固定用這個就好）</td>
+                    </tr>
+                </table>
+                <div class="box info">
+                    <p>&#x1F4A1; 試試看！把經緯度改成你家附近的座標，再貼到瀏覽器看看會得到什麼資料！（去 Google Maps 按右鍵就能看到座標）</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: LINE 設定步驟 1 -->
+        <div class="slide" id="slide-6">
+            <div class="content-card">
+                <h2>&#x1F4F1; LINE Messaging API 設定（步驟 1/4）</h2>
+                <div class="big-title">第一步：建立 LINE Developers 帳號</div>
+                <ol class="step-list">
+                    <li>打開瀏覽器，前往 LINE Developers 網站</li>
+                    <li>網址：<a href="https://developers.line.biz/" target="_blank" style="color:#2a5298; font-weight:bold;">https://developers.line.biz/</a></li>
+                    <li>點擊右上角「Log in」</li>
+                    <li>使用你的 LINE 帳號登入</li>
+                    <li>如果是第一次，會要求你建立開發者帳號，填寫姓名和 Email 即可</li>
+                </ol>
+                <div class="box info">
+                    <p>&#x1F4A1; 如果登入遇到問題，可以先用手機 LINE 掃描 QR Code 登入</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: LINE 設定步驟 2 -->
+        <div class="slide" id="slide-7">
+            <div class="content-card">
+                <h2>&#x1F4F1; LINE Messaging API 設定（步驟 2/4）</h2>
+                <div class="big-title">第二步：建立 Provider 和 Channel</div>
+                <ol class="step-list">
+                    <li>登入後，點擊「Create a new provider」</li>
+                    <li>Provider 名稱隨意填（例如：我的衛星專案）</li>
+                    <li>建立完成後，點擊「Create a Messaging API channel」</li>
+                    <li>填寫以下資訊：
+                        <ul class="sub-list">
+                            <li><strong>Channel name：</strong>衛星觀測推播（或任意名稱）</li>
+                            <li><strong>Channel description：</strong>低軌衛星資訊推播</li>
+                            <li><strong>Category：</strong>選擇 Education</li>
+                            <li><strong>Subcategory：</strong>選擇任意</li>
+                        </ul>
+                    </li>
+                    <li>勾選同意條款，點擊「Create」</li>
+                </ol>
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; Channel name 建立後就無法更改，請想好再填！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: LINE 設定步驟 3 -->
+        <div class="slide" id="slide-8">
+            <div class="content-card">
+                <h2>&#x1F4F1; LINE Messaging API 設定（步驟 3/4）</h2>
+                <div class="big-title">第三步：取得 Channel Access Token</div>
+                <ol class="step-list">
+                    <li>建立 Channel 完成後，進入 Channel 設定頁面</li>
+                    <li>點擊上方的「Messaging API」分頁</li>
+                    <li>滾動到最下方，找到「Channel access token (long-lived)」</li>
+                    <li>點擊「Issue」按鈕</li>
+                    <li>產生一串很長的 Token（一串英數字）</li>
+                    <li>&#x26A0;&#xFE0F; 請立刻複製並貼到記事本保存！</li>
+                </ol>
+                <h3 style="margin-top: 30px;">同時取得 User ID</h3>
+                <ol class="step-list">
+                    <li>在同一頁面的「Basic settings」分頁</li>
+                    <li>找到「Your user ID」（以 U 開頭的一串字）</li>
+                    <li>同樣複製保存</li>
+                </ol>
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; Token 和 User ID 非常重要，就像你的密碼一樣，請妥善保管！不要外流！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: LINE 設定步驟 4 -->
+        <div class="slide" id="slide-9">
+            <div class="content-card">
+                <h2>&#x1F4F1; LINE Messaging API 設定（步驟 4/4）</h2>
+                <div class="big-title">第四步：加入你的 LINE Bot 好友</div>
+                <ol class="step-list">
+                    <li>在 Channel 設定頁面，找到「Messaging API」分頁</li>
+                    <li>找到上方的 QR Code</li>
+                    <li>用手機 LINE 掃描這個 QR Code</li>
+                    <li>加入你剛建立的 Bot 為好友</li>
+                    <li>完成！之後程式推播的訊息就會從這個 Bot 發送到你的 LINE</li>
+                </ol>
+                <div class="box success">
+                    <p>&#x1F389; 恭喜！LINE 的部分設定完成了！你現在有兩個重要的東西：<br>① <strong>Channel Access Token</strong> &nbsp;&nbsp; ② <strong>Your User ID</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Google Apps Script -->
+        <div class="slide" id="slide-10">
+            <div class="content-card">
+                <h2>&#x1F4BB; 建立 Google Apps Script 專案</h2>
+                <ol class="step-list">
+                    <li>打開瀏覽器，前往 <a href="https://script.google.com/" target="_blank" style="color:#2a5298; font-weight:bold;">https://script.google.com/</a></li>
+                    <li>用你的 Google 帳號登入</li>
+                    <li>點擊左上角「+ 新增專案」</li>
+                    <li>點擊左上角的「未命名的專案」，改名為「低軌衛星LINE推播」</li>
+                    <li>你會看到一個程式編輯器，裡面有 <code>function myFunction() { }</code></li>
+                    <li>全部刪掉，等一下我們會貼上新的程式碼</li>
+                </ol>
+                <div class="box success">
+                    <p>&#x1F389; 環境全部準備完成！我們有了：<br>
+                    &#x2705; NASA API（不用設定）<br>
+                    &#x2705; LINE Bot Token<br>
+                    &#x2705; GAS 程式環境<br><br>
+                    接下來進入最精彩的 — 寫程式！</p>
+                </div>
+                <div style="display:flex; justify-content:center; gap:20px; margin-top:40px; flex-wrap:wrap;">
+                    <a href="index.html" style="display:inline-block; padding:15px 35px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; text-decoration:none; border-radius:30px; font-size:18px; font-weight:600; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition:all 0.3s;">&#x1F3E0; 回到首頁</a>
+                    <a href="Part3_衛星資料API實作.html" style="display:inline-block; padding:15px 35px; background:linear-gradient(135deg, #1e3c72, #2a5298); color:white; text-decoration:none; border-radius:30px; font-size:18px; font-weight:600; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition:all 0.3s;">&#x25B6;&#xFE0F; 下一章：衛星資料 API 實作 →</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 導航箭頭 -->
+    <button class="nav-arrow left" onclick="changeSlide(-1)">&#x276E;</button>
+    <button class="nav-arrow right" onclick="changeSlide(1)">&#x276F;</button>
+
+    <!-- 頁碼指示器 -->
+    <div class="page-indicator" id="pageIndicator"></div>
+
+    <!-- 版權 -->
+    <div class="copyright">&copy; 2026 低軌衛星資訊應用 | Made with 曾慶良(阿亮老師) &#x2764;&#xFE0F;</div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 10;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.page-dot');
+
+            if (n > totalSlides) currentSlide = 1;
+            if (n < 1) currentSlide = totalSlides;
+
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            dots.forEach(dot => {
+                dot.classList.remove('active');
+            });
+
+            slides[currentSlide - 1].classList.add('active');
+            dots[currentSlide - 1].classList.add('active');
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+
+        // 建立頁碼指示器
+        function createPageIndicator() {
+            const indicator = document.getElementById('pageIndicator');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'page-dot' + (i === 1 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                indicator.appendChild(dot);
+            }
+        }
+
+        // 鍵盤支援
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        // 全螢幕切換
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('全螢幕請求失敗:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 初始化
+        createPageIndicator();
+    </script>
+
+</body>
+</html>

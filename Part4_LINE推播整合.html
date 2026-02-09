@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 4 - LINE 推播整合</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 導航列 */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 22, 40, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 10000;
+        }
+
+        .nav-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* 投影片容器 */
+        .slides-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            padding-top: 60px;
+        }
+
+        .slide {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* 內容卡片 */
+        .content-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 60px;
+            max-width: 1400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .content-card::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content-card::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content-card::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        /* 標題樣式 */
+        h1 {
+            color: #1e3c72;
+            font-size: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        h2 {
+            color: #2a5298;
+            font-size: 38px;
+            border-bottom: 3px solid #1e3c72;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            color: #1e3c72;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        p, li {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul, ol {
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 程式碼樣式 */
+        code {
+            background: #f0f2f5;
+            color: #d63384;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-weight: 600;
+        }
+
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 18px;
+            line-height: 1.6;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        pre code {
+            background: transparent;
+            color: #abb2bf;
+            padding: 0;
+            font-weight: normal;
+        }
+
+        /* Box 樣式 */
+        .box {
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 6px solid;
+            margin: 20px 0;
+            font-size: 20px;
+        }
+
+        .info {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            color: #0d47a1;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #84fab0, #8fd3f4);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #004d40;
+        }
+
+        /* Grid 樣式 */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+
+        .concept-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .concept-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .concept-card p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #1e3c72;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 封面樣式 */
+        .cover {
+            text-align: center;
+        }
+
+        .cover .subtitle {
+            font-size: 22px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+
+        .cover h1 {
+            font-size: 64px;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cover .description {
+            font-size: 24px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 40px;
+        }
+
+        .cover .tags {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .cover .tag {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        /* 導航箭頭 */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: all 0.3s ease;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-arrow.left {
+            left: 20px;
+        }
+
+        .nav-arrow.right {
+            right: 20px;
+        }
+
+        /* 頁碼指示器 */
+        .page-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 9999;
+        }
+
+        .page-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-dot.active {
+            background: #fff;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .page-dot:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 版權 */
+        .copyright {
+            position: fixed;
+            bottom: 8px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+            z-index: 9999;
+        }
+
+        /* 封面動畫 */
+        .cover .icon-large {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* 流程圖容器 */
+        .flow-chart {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 導航列 -->
+    <div class="nav-bar">
+        <div class="nav-title">&#x1F4F2; Part 4 - LINE 推播整合</div>
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn">&#x1F3E0; 首頁</a>
+            <button class="nav-btn" onclick="toggleFullscreen()">&#x1F5A5;&#xFE0F; 全螢幕</button>
+            <a href="https://www.facebook.com/?locale=zh_TW" target="_blank" class="nav-btn">&#x1F4D8; FB</a>
+            <a href="https://www.youtube.com/@Liang-yt02" target="_blank" class="nav-btn">&#x1F3A5; YT</a>
+        </div>
+    </div>
+
+    <!-- 投影片 -->
+    <div class="slides-container">
+
+        <!-- Slide 1: 封面 -->
+        <div class="slide active" id="slide-1">
+            <div class="content-card cover">
+                <span class="icon-large">&#x1F916;</span>
+                <div class="subtitle">LINE Bot Integration</div>
+                <h1>Part 4: LINE 推播整合</h1>
+                <p class="description">「從推播到互動 &#x2014; 打造 LINE 聊天機器人」</p>
+                <div class="tags">
+                    <span class="tag">Data Interpretation</span>
+                    <span class="tag">LINE Bot</span>
+                    <span class="tag">Webhook</span>
+                    <span class="tag">Interactive Bot</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: 資料轉譯規則 -->
+        <div class="slide" id="slide-2">
+            <div class="content-card">
+                <h2>&#x1F504; 把數字變成「人話」</h2>
+                <p>衛星回傳的是數字，但我們要讓任何人都能看懂。以下是轉譯規則：</p>
+                <table>
+                    <tr>
+                        <th>資料</th>
+                        <th>條件</th>
+                        <th>轉譯結果</th>
+                    </tr>
+                    <tr>
+                        <td>氣溫</td>
+                        <td>&gt; 30&#xB0;C</td>
+                        <td>&#x1F525; 高溫炎熱</td>
+                    </tr>
+                    <tr>
+                        <td>氣溫</td>
+                        <td>20-30&#xB0;C</td>
+                        <td>&#x2600;&#xFE0F; 溫暖舒適</td>
+                    </tr>
+                    <tr>
+                        <td>氣溫</td>
+                        <td>10-20&#xB0;C</td>
+                        <td>&#x1F342; 涼爽</td>
+                    </tr>
+                    <tr>
+                        <td>氣溫</td>
+                        <td>&lt; 10&#xB0;C</td>
+                        <td>&#x2744;&#xFE0F; 寒冷</td>
+                    </tr>
+                    <tr>
+                        <td>降雨</td>
+                        <td>&gt; 10mm</td>
+                        <td>&#x1F327;&#xFE0F; 有明顯降雨</td>
+                    </tr>
+                    <tr>
+                        <td>降雨</td>
+                        <td>1-10mm</td>
+                        <td>&#x1F326;&#xFE0F; 少量降雨</td>
+                    </tr>
+                    <tr>
+                        <td>降雨</td>
+                        <td>&lt; 1mm</td>
+                        <td>&#x2600;&#xFE0F; 無降雨</td>
+                    </tr>
+                    <tr>
+                        <td>濕度</td>
+                        <td>&gt; 80%</td>
+                        <td>&#x1F4A7; 潮濕</td>
+                    </tr>
+                    <tr>
+                        <td>濕度</td>
+                        <td>40-80%</td>
+                        <td>&#x1F324;&#xFE0F; 舒適</td>
+                    </tr>
+                    <tr>
+                        <td>濕度</td>
+                        <td>&lt; 40%</td>
+                        <td>&#x1F3DC;&#xFE0F; 乾燥</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 3: 資料解讀函式 interpretData -->
+        <div class="slide" id="slide-3">
+            <div class="content-card">
+                <h2>&#x1F4BB; 資料解讀函式 interpretData</h2>
+                <p>這個函式負責將衛星數據轉換成使用者能看懂的訊息，並加入生活建議分析：</p>
+                <pre><code>// === &#x1F4CA; 解讀衛星資料，轉成人看得懂的話 ===
+function interpretData(data, locationName) {
+  const params = data.properties.parameter;
+  const dates = Object.keys(params.T2M);
+  const latestDate = dates[dates.length - 1];
+
+  const temp = params.T2M[latestDate];
+  const tempMax = params.T2M_MAX[latestDate];
+  const tempMin = params.T2M_MIN[latestDate];
+  const rain = params.PRECTOTCORR[latestDate];
+  const humidity = params.RH2M[latestDate];
+
+  // 氣溫判讀
+  let tempStatus = '';
+  if (temp &gt; 30) tempStatus = '高溫炎熱 &#x1F525;';
+  else if (temp &gt; 20) tempStatus = '溫暖舒適 &#x2600;&#xFE0F;';
+  else if (temp &gt; 10) tempStatus = '涼爽 &#x1F342;';
+  else tempStatus = '寒冷 &#x2744;&#xFE0F;';
+
+  // 降雨判讀
+  let rainStatus = '';
+  if (rain &gt; 10) rainStatus = '有明顯降雨 &#x1F327;&#xFE0F;';
+  else if (rain &gt; 1) rainStatus = '少量降雨 &#x1F326;&#xFE0F;';
+  else rainStatus = '無降雨 &#x2600;&#xFE0F;';
+
+  // 生活建議分析
+  let analysis = [];
+  if (temp &lt;= 15) analysis.push('氣溫偏低，建議穿著保暖衣物');
+  else if (temp &lt;= 22) analysis.push('氣溫涼爽，建議攜帶薄外套');
+  else if (temp &gt;= 33) analysis.push('高溫警戒，注意防曬補水');
+
+  if (tempMax - tempMin &gt; 10) analysis.push('日夜溫差大（' +
+    (tempMax - tempMin).toFixed(1) + '&#xB0;C），早晚記得加衣');
+
+  if (rain &gt; 10) analysis.push('降雨明顯，請攜帶雨具，避免戶外活動');
+  else if (rain &gt; 1) analysis.push('可能有零星降雨，建議帶傘備用');
+  else analysis.push('無降雨，適合戶外活動');
+
+  if (humidity &gt; 80) analysis.push('濕度偏高（' +
+    humidity.toFixed(0) + '%），體感較悶熱');
+  else if (humidity &lt; 40) analysis.push('空氣乾燥（' +
+    humidity.toFixed(0) + '%），注意保濕');
+
+  // 組合訊息
+  const message = '\n&#x1F6F0;&#xFE0F; 衛星觀測日報' +
+    '\n━━━━━━━━━━━━' +
+    '\n&#x1F4CD; 地點：' + locationName +
+    '\n&#x1F4C5; 日期：' + latestDate +
+    '\n━━━━━━━━━━━━' +
+    '\n&#x1F321;&#xFE0F; 氣溫：' + temp.toFixed(1) + '&#xB0;C（' + tempStatus + '）' +
+    '\n&#x1F4CA; 最高/最低：' + tempMax.toFixed(1) + '&#xB0;C / ' +
+      tempMin.toFixed(1) + '&#xB0;C' +
+    '\n&#x1F4A7; 降雨量：' + rain.toFixed(1) + ' mm（' + rainStatus + '）' +
+    '\n&#x1F4A8; 相對濕度：' + humidity.toFixed(0) + '%' +
+    '\n━━━━━━━━━━━━' +
+    '\n&#x1F4AC; 衛星資料分析：' +
+    '\n' + analysis.map(a =&gt; '&#x2022; ' + a).join('\n') +
+    '\n━━━━━━━━━━━━' +
+    '\n&#x1F4E1; 資料來源：NASA POWER（低軌衛星觀測）';
+
+  return message;
+}</code></pre>
+                <div class="box info">
+                    <p>&#x1F4A1; 跟之前不同的是：新增了「&#x1F4AC; 衛星資料分析」區塊，根據氣溫、降雨、濕度自動產生生活建議，讓使用者一看就懂！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Webhook 接收 + 回覆函式 -->
+        <div class="slide" id="slide-4">
+            <div class="content-card">
+                <h2>&#x1F4F2; Webhook 接收 + LINE 回覆函式</h2>
+                <p>使用者在 LINE 發送訊息後，LINE 會把訊息轉發到我們的 GAS Web App。以下是接收和回覆的函式：</p>
+                <pre><code>// === &#x1F4E8; 接收 LINE Webhook 事件 ===
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const events = data.events;
+
+  for (let i = 0; i &lt; events.length; i++) {
+    if (events[i].type === 'message' &amp;&amp; events[i].message.type === 'text') {
+      handleTextMessage(events[i]);
+    }
+  }
+
+  return ContentService.createTextOutput('OK');
+}
+
+// === &#x1F4E4; 回覆 LINE 訊息 ===
+function replyToLINE(replyToken, message) {
+  const url = 'https://api.line.me/v2/bot/message/reply';
+  const payload = {
+    replyToken: replyToken,
+    messages: [{ type: 'text', text: message }]
+  };
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'Authorization': 'Bearer ' + LINE_TOKEN },
+    payload: JSON.stringify(payload)
+  };
+  UrlFetchApp.fetch(url, options);
+}</code></pre>
+                <h3>逐行解釋</h3>
+                <ul>
+                    <li><code>doPost(e)</code> &#x2192; GAS 的 Webhook 入口，LINE 會自動呼叫</li>
+                    <li><code>e.postData.contents</code> &#x2192; LINE 傳來的訊息內容</li>
+                    <li><code>ContentService.createTextOutput('OK')</code> &#x2192; 回傳 OK 讓 LINE 知道收到了</li>
+                    <li><code>replyToLINE</code> &#x2192; 使用 Reply API（不是 Push API），用 replyToken 回覆</li>
+                </ul>
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; <strong>Push API vs Reply API 差異：</strong>Push 是「主動推送」給指定 User ID；Reply 是「回覆」使用者的訊息，用 replyToken。互動式機器人用 Reply API！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: 處理使用者訊息 handleTextMessage -->
+        <div class="slide" id="slide-5">
+            <div class="content-card">
+                <h2>&#x1F916; 處理使用者訊息</h2>
+                <p>這個函式負責判斷使用者輸入的是城市名稱還是自訂座標，然後查詢衛星資料：</p>
+                <pre><code>// === &#x1F916; 處理使用者的文字訊息 ===
+function handleTextMessage(event) {
+  const text = event.message.text.trim();
+  const replyToken = event.replyToken;
+
+  // 檢查是否為預設城市名稱
+  if (LOCATIONS[text]) {
+    const loc = LOCATIONS[text];
+    const data = getSatelliteData(loc.lat, loc.lon);
+    const message = interpretData(data, text);
+    replyToLINE(replyToken, message);
+    return;
+  }
+
+  // 檢查是否為自訂座標（例如：23.0, 120.2）
+  const coordMatch = text.match(/^([\d.-]+)\s*[,&#xFF0C;\s]\s*([\d.-]+)$/);
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]);
+    const lon = parseFloat(coordMatch[2]);
+    const data = getSatelliteData(lat, lon);
+    const message = interpretData(data, lat + '&#xB0;N, ' + lon + '&#xB0;E');
+    replyToLINE(replyToken, message);
+    return;
+  }
+
+  // 都不是 &#x2192; 顯示使用說明
+  replyToLINE(replyToken, getHelpMessage());
+}
+
+// === &#x2753; 使用說明 ===
+function getHelpMessage() {
+  return '&#x1F6F0;&#xFE0F; 低軌衛星觀測機器人\n' +
+    '━━━━━━━━━━━━\n' +
+    '&#x1F4CD; 輸入城市名稱查詢，例如：\n' +
+    '   台北、台中、台南、高雄\n' +
+    '   花蓮、墾丁、東京、紐約\n\n' +
+    '&#x1F4D0; 或輸入自訂座標，例如：\n' +
+    '   23.0, 120.2\n\n' +
+    '&#x1F30F; 支援全球任何地點！';
+}</code></pre>
+                <div class="box info">
+                    <p>&#x1F4A1; <strong>處理邏輯：</strong>&#x2460; 先檢查是不是預設城市名稱 &#x2192; &#x2461; 再檢查是不是座標格式 &#x2192; &#x2462; 都不是就顯示使用說明。使用者完全不需要記任何指令！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: 部署與測試 -->
+        <div class="slide" id="slide-6">
+            <div class="content-card">
+                <h2>&#x1F680; 部署為 Web App 並設定 Webhook</h2>
+                <h3>操作步驟</h3>
+                <ol>
+                    <li>GAS 編輯器 &#x2192; 點擊右上角「部署」&#x2192;「新增部署作業」</li>
+                    <li>類型選擇「網頁應用程式」</li>
+                    <li>說明填寫「低軌衛星 LINE Bot」</li>
+                    <li>執行身分選「我」</li>
+                    <li>誰可以存取選「所有人」</li>
+                    <li>點擊「部署」&#x2192; 複製產生的「網頁應用程式網址」</li>
+                    <li>回到 LINE Developers &#x2192; 進入你的 Channel &#x2192; Messaging API 分頁</li>
+                    <li>在 Webhook URL 欄位貼上剛才的網址</li>
+                    <li>點擊「Verify」確認連線成功</li>
+                    <li>打開「Use webhook」開關</li>
+                    <li>關閉「Auto-reply messages」和「Greeting messages」</li>
+                </ol>
+                <div class="box success">
+                    <p>&#x1F389; 部署完成！現在打開手機 LINE，對你的機器人發送「台南」試試看！</p>
+                </div>
+                <div class="box warning">
+                    <p>&#x26A0;&#xFE0F; 每次修改程式碼後，需要重新「部署」&#x2192;「管理部署作業」&#x2192;「編輯」&#x2192; 版本選「新版本」&#x2192;「部署」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: 常見問題排除 -->
+        <div class="slide" id="slide-7">
+            <div class="content-card">
+                <h2>&#x1F527; 常見問題排除</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>&#x26A0;&#xFE0F; Webhook 驗證失敗</h3>
+                        <p>確認 GAS 部署為「所有人」可存取，確認網址正確貼上。若仍失敗，請重新部署一次新版本。</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x26A0;&#xFE0F; 機器人沒回應</h3>
+                        <p>確認 Webhook URL 已設定、Use webhook 已開啟、Auto-reply 已關閉。可到 GAS 的「執行記錄」查看是否有錯誤訊息。</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x26A0;&#xFE0F; 回覆 403 或 Token 錯誤</h3>
+                        <p>確認 <code>LINE_TOKEN</code> 正確，前後無空白。確保是從 LINE Developers 後台複製的 Channel Access Token。</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x2753; 第一次部署要求授權</h3>
+                        <p>這是正常的！點擊「審查權限」&#x2192; 選帳號 &#x2192;「進階」&#x2192;「前往...（不安全）」&#x2192;「允許」即可。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: 小結 -->
+        <div class="slide" id="slide-8">
+            <div class="content-card">
+                <h2>&#x2705; Part 4 完成！</h2>
+                <div class="box success">
+                    <p>&#x1F389; 恭喜！你成功打造了一個互動式「低軌衛星觀測 LINE 聊天機器人」！</p>
+                </div>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>&#x2705; 學會把數字轉譯成人話，含生活建議分析</h3>
+                        <p>透過 if/else 條件判斷，將衛星觀測的數值轉換成文字描述，並自動產生穿衣、帶傘等生活建議</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x2705; 建立 Webhook 接收 LINE 訊息（doPost）</h3>
+                        <p>學會使用 GAS 的 doPost 函式接收 LINE Webhook 事件，並用 Reply API 回覆使用者訊息</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x2705; 部署 GAS 為 Web App 並串接 LINE Webhook</h3>
+                        <p>將 Google Apps Script 部署為網頁應用程式，並在 LINE Developers 後台設定 Webhook URL</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>&#x2705; 成功打造互動式衛星觀測 LINE 機器人</h3>
+                        <p>使用者只要輸入城市名稱或座標，機器人就會即時回覆衛星觀測資料與生活建議</p>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:center; gap:20px; margin-top:40px; flex-wrap:wrap;">
+                    <a href="index.html" style="display:inline-block; padding:15px 35px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; text-decoration:none; border-radius:30px; font-size:18px; font-weight:600; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition:all 0.3s;">&#x1F3E0; 回到首頁</a>
+                    <a href="Part5_延伸應用與總結.html" style="display:inline-block; padding:15px 35px; background:linear-gradient(135deg, #1e3c72, #2a5298); color:white; text-decoration:none; border-radius:30px; font-size:18px; font-weight:600; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition:all 0.3s;">&#x25B6;&#xFE0F; 下一章：延伸應用與總結 &#x2192;</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 導航箭頭 -->
+    <button class="nav-arrow left" onclick="changeSlide(-1)">&#x276E;</button>
+    <button class="nav-arrow right" onclick="changeSlide(1)">&#x276F;</button>
+
+    <!-- 頁碼指示器 -->
+    <div class="page-indicator" id="pageIndicator"></div>
+
+    <!-- 版權 -->
+    <div class="copyright">&copy; 2026 低軌衛星資訊應用 | Made with 曾慶良(阿亮老師) &#x2764;&#xFE0F;</div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.page-dot');
+
+            if (n > totalSlides) currentSlide = 1;
+            if (n < 1) currentSlide = totalSlides;
+
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            dots.forEach(dot => {
+                dot.classList.remove('active');
+            });
+
+            slides[currentSlide - 1].classList.add('active');
+            dots[currentSlide - 1].classList.add('active');
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+
+        // 建立頁碼指示器
+        function createPageIndicator() {
+            const indicator = document.getElementById('pageIndicator');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'page-dot' + (i === 1 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                indicator.appendChild(dot);
+            }
+        }
+
+        // 鍵盤支援
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        // 全螢幕切換
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('全螢幕請求失敗:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 初始化
+        createPageIndicator();
+    </script>
+
+</body>
+</html>
