@@ -4,7 +4,7 @@
 
 ### 用低軌衛星觀測資料，打造你的即時推播系統
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-線上簡報-blue?style=for-the-badge&logo=github)](https://chatgpt3a01.github.io/低軌衛星資訊應用/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-線上簡報-blue?style=for-the-badge&logo=github)](https://chatgpt3a01.github.io/leo-satellite-line-bot/)
 [![License](https://img.shields.io/badge/授權-阿亮老師課程專用-red?style=for-the-badge)](LICENSE)
 
 <img src="https://img.shields.io/badge/NASA-POWER%20API-0B3D91?style=flat-square&logo=nasa" />
