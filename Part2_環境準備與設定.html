@@ -553,7 +553,7 @@
 
                 <div class="box info">
                     <p>&#x1F4A1; API 網址入口（完整範例，可直接貼到瀏覽器試試）：<br>
-                    <a href="https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,PRECTOTCORR&amp;community=RE&amp;longitude=121.5&amp;latitude=25.03&amp;start=20250101&amp;end=20250107&amp;format=JSON" target="_blank"><code style="font-size:16px; word-break:break-all;">https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,PRECTOTCORR&amp;community=RE&amp;longitude=121.5&amp;latitude=25.03&amp;start=20250101&amp;end=20250107&amp;format=JSON</code></a><br><br>
+                    <a href="https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M,ALLSKY_SFC_SW_DWN,WS2M&amp;community=AG&amp;longitude=121.5&amp;latitude=25.03&amp;start=20250101&amp;end=20250107&amp;format=JSON" target="_blank"><code style="font-size:16px; word-break:break-all;">https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M,ALLSKY_SFC_SW_DWN,WS2M&amp;community=AG&amp;longitude=121.5&amp;latitude=25.03&amp;start=20250101&amp;end=20250107&amp;format=JSON</code></a><br><br>
                     下一頁我們馬上來試！</p>
                 </div>
             </div>
@@ -574,7 +574,7 @@
                     <li>你會看到一大串文字，那就是低軌衛星觀測到的資料！</li>
                 </ol>
                 <h3>&#x1F447; 複製這串網址</h3>
-<pre><code>https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M&amp;community=AG&amp;longitude=120.2&amp;latitude=23.0&amp;start=20260201&amp;end=20260207&amp;format=JSON</code></pre>
+<pre><code>https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M,ALLSKY_SFC_SW_DWN,WS2M&amp;community=AG&amp;longitude=120.2&amp;latitude=23.0&amp;start=20260201&amp;end=20260207&amp;format=JSON</code></pre>
                 <div class="box success">
                     <p>&#x1F389; 如果你看到一堆大括號和數字，恭喜！你剛剛成功用「低軌衛星觀測資料 API」取得了台南地區一週的氣象資料！</p>
                 </div>
@@ -594,7 +594,7 @@ https://power.larc.nasa.gov/api/temporal/daily/point
 
 加上你的需求（用 ? 和 &amp; 連接）：
 
-?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M   &#x2190; 要哪些觀測資料
+?parameters=T2M,...,ALLSKY_SFC_SW_DWN,WS2M           &#x2190; 要哪些觀測資料
 &amp;community=AG                                        &#x2190; 資料類別（農業）
 &amp;longitude=120.2                                     &#x2190; 經度（台南）
 &amp;latitude=23.0                                       &#x2190; 緯度（台南）
@@ -610,7 +610,7 @@ https://power.larc.nasa.gov/api/temporal/daily/point
                     <tr>
                         <td>parameters</td>
                         <td>想要哪些觀測資料</td>
-                        <td>T2M=氣溫, PRECTOTCORR=降雨, RH2M=濕度</td>
+                        <td>T2M=氣溫, PRECTOTCORR=降雨, RH2M=濕度, ALLSKY_SFC_SW_DWN=日照量, WS2M=風速</td>
                     </tr>
                     <tr>
                         <td>community</td>
@@ -738,7 +738,7 @@ https://power.larc.nasa.gov/api/temporal/daily/point
                     <li>打開瀏覽器，前往 <a href="https://sheets.google.com/" target="_blank" style="color:#2a5298; font-weight:bold;">Google Sheets</a>，用你的 Google 帳號登入</li>
                     <li>點擊「+ 空白試算表」建立新的試算表</li>
                     <li>將試算表命名為「低軌衛星LINE推播 - 查詢紀錄」</li>
-                    <li>在第一列（A1～F1）輸入表頭：<code>查詢時間</code>、<code>地點</code>、<code>氣溫(°C)</code>、<code>降雨量(mm)</code>、<code>濕度(%)</code>、<code>查詢者</code></li>
+                    <li>在第一列（A1～H1）輸入表頭：<code>查詢時間</code>、<code>地點</code>、<code>氣溫(°C)</code>、<code>降雨量(mm)</code>、<code>濕度(%)</code>、<code>日照量(MJ/m²)</code>、<code>風速(m/s)</code>、<code>查詢者</code></li>
                     <li>點擊上方選單 <strong>「擴充功能」</strong> &#x2192; <strong>「Apps Script」</strong></li>
                     <li>會開啟 Apps Script 編輯器，點擊左上角「未命名的專案」，改名為「低軌衛星LINE推播」</li>
                     <li>你會看到程式編輯器，裡面有 <code>function myFunction() { }</code></li>

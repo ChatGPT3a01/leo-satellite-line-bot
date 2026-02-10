@@ -556,7 +556,7 @@
                 </div>
                 <h3>組裝公式</h3>
                 <pre><code>https://power.larc.nasa.gov/api/temporal/daily/point  &larr; 主網址（固定不變）
-  ?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M   &larr; 你要的資料
+  ?parameters=T2M,...,ALLSKY_SFC_SW_DWN,WS2M           &larr; 你要的資料
   &amp;community=AG                                        &larr; 資料類別
   &amp;longitude=你的經度                                   &larr; 例：120.2
   &amp;latitude=你的緯度                                    &larr; 例：23.0
@@ -622,7 +622,7 @@ function getSatelliteData(lat, lon) {
 
   // 組合 API 網址
   const url = 'https://power.larc.nasa.gov/api/temporal/daily/point' +
-    '?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M' +
+    '?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M,ALLSKY_SFC_SW_DWN,WS2M' +
     '&amp;community=AG' +
     '&amp;longitude=' + lon +
     '&amp;latitude=' + lat +
@@ -665,6 +665,8 @@ function logToSheet(locationName, lat, lon, data) {
     params.T2M[latestDate],
     params.PRECTOTCORR[latestDate],
     params.RH2M[latestDate],
+    params.ALLSKY_SFC_SW_DWN[latestDate],
+    params.WS2M[latestDate],
     'LINE 使用者'
   ]);
 }</code></pre>

@@ -365,7 +365,7 @@ function getSatelliteData(lat, lon) {
   const start = Utilities.formatDate(weekAgo, 'GMT+8', 'yyyyMMdd');
 
   const url = 'https://power.larc.nasa.gov/api/temporal/daily/point' +
-    '?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M' +
+    '?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,RH2M,ALLSKY_SFC_SW_DWN,WS2M' +
     '&amp;community=AG&amp;longitude=' + lon + '&amp;latitude=' + lat +
     '&amp;start=' + start + '&amp;end=' + end + '&amp;format=JSON';
 
@@ -383,6 +383,8 @@ function interpretData(data, locationName) {
   const tempMin = params.T2M_MIN[latestDate];
   const rain = params.PRECTOTCORR[latestDate];
   const humidity = params.RH2M[latestDate];
+  const solar = params.ALLSKY_SFC_SW_DWN[latestDate];
+  const wind = params.WS2M[latestDate];
 
   let tempStatus = temp > 30 ? '高溫炎熱 🔥' :
     temp > 20 ? '溫暖舒適 ☀️' :
@@ -390,6 +392,9 @@ function interpretData(data, locationName) {
 
   let rainStatus = rain > 10 ? '有明顯降雨 🌧️' :
     rain > 1 ? '少量降雨 🌦️' : '無降雨 ☀️';
+
+  let windStatus = wind > 10 ? '強風 💨' :
+    wind > 5 ? '微風 🍃' : '無風 🌤️';
 
   let analysis = [];
   if (temp &lt;= 15) analysis.push('氣溫偏低，建議穿著保暖衣物');
@@ -400,6 +405,8 @@ function interpretData(data, locationName) {
   else if (rain > 1) analysis.push('可能有零星降雨，建議帶傘');
   else analysis.push('無降雨，適合戶外活動');
   if (humidity > 80) analysis.push('濕度偏高，體感較悶熱');
+  if (solar > 20) analysis.push('日照強烈，注意防曬');
+  if (wind > 10) analysis.push('風速較大，戶外活動注意安全');
 
   return '\n🛰️ 衛星觀測日報' +
     '\n━━━━━━━━━━━━' +
@@ -410,6 +417,8 @@ function interpretData(data, locationName) {
     '\n📊 最高/最低：' + tempMax.toFixed(1) + '°C / ' + tempMin.toFixed(1) + '°C' +
     '\n💧 降雨量：' + rain.toFixed(1) + ' mm（' + rainStatus + '）' +
     '\n💨 相對濕度：' + humidity.toFixed(0) + '%' +
+    '\n☀️ 日照量：' + solar.toFixed(1) + ' MJ/m²' +
+    '\n🌬️ 風速：' + wind.toFixed(1) + ' m/s（' + windStatus + '）' +
     '\n━━━━━━━━━━━━' +
     '\n💬 衛星資料分析：' +
     '\n' + analysis.map(a => '• ' + a).join('\n') +
@@ -430,6 +439,8 @@ function logToSheet(locationName, lat, lon, data) {
     params.T2M[latestDate],
     params.PRECTOTCORR[latestDate],
     params.RH2M[latestDate],
+    params.ALLSKY_SFC_SW_DWN[latestDate],
+    params.WS2M[latestDate],
     'LINE 使用者'
   ]);
 }
