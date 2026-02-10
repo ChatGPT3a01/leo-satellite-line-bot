@@ -733,20 +733,27 @@ https://power.larc.nasa.gov/api/temporal/daily/point
         <!-- Slide 10: Google Apps Script -->
         <div class="slide" id="slide-10">
             <div class="content-card">
-                <h2>&#x1F4BB; 建立 Google Apps Script 專案</h2>
+                <h2>&#x1F4BB; 建立 Google Sheet + Apps Script 專案</h2>
                 <ol class="step-list">
-                    <li>打開瀏覽器，前往 <a href="https://script.google.com/" target="_blank" style="color:#2a5298; font-weight:bold;">https://script.google.com/</a></li>
-                    <li>用你的 Google 帳號登入</li>
-                    <li>點擊左上角「+ 新增專案」</li>
-                    <li>點擊左上角的「未命名的專案」，改名為「低軌衛星LINE推播」</li>
-                    <li>你會看到一個程式編輯器，裡面有 <code>function myFunction() { }</code></li>
+                    <li>打開瀏覽器，前往 <a href="https://sheets.google.com/" target="_blank" style="color:#2a5298; font-weight:bold;">Google Sheets</a>，用你的 Google 帳號登入</li>
+                    <li>點擊「+ 空白試算表」建立新的試算表</li>
+                    <li>將試算表命名為「低軌衛星LINE推播 - 查詢紀錄」</li>
+                    <li>在第一列（A1～F1）輸入表頭：<code>查詢時間</code>、<code>地點</code>、<code>氣溫(°C)</code>、<code>降雨量(mm)</code>、<code>濕度(%)</code>、<code>查詢者</code></li>
+                    <li>點擊上方選單 <strong>「擴充功能」</strong> &#x2192; <strong>「Apps Script」</strong></li>
+                    <li>會開啟 Apps Script 編輯器，點擊左上角「未命名的專案」，改名為「低軌衛星LINE推播」</li>
+                    <li>你會看到程式編輯器，裡面有 <code>function myFunction() { }</code></li>
                     <li>全部刪掉，等一下我們會貼上新的程式碼</li>
                 </ol>
+                <div class="box info">
+                    <p>&#x1F4A1; 為什麼要從 Google Sheet 進入？<br>
+                    這樣 Apps Script 會和試算表<strong>綁定</strong>，程式碼可以自動把每次的查詢紀錄寫入試算表，方便你蒐集和分析資料！</p>
+                </div>
                 <div class="box success">
                     <p>&#x1F389; 環境全部準備完成！我們有了：<br>
                     &#x2705; NASA API（不用設定）<br>
                     &#x2705; LINE Bot Token<br>
-                    &#x2705; GAS 程式環境<br><br>
+                    &#x2705; Google Sheet（自動蒐集查詢紀錄）<br>
+                    &#x2705; GAS 程式環境（綁定試算表）<br><br>
                     接下來進入最精彩的 — 寫程式！</p>
                 </div>
                 <div style="display:flex; justify-content:center; gap:20px; margin-top:40px; flex-wrap:wrap;">

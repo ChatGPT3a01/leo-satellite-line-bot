@@ -649,6 +649,7 @@ function handleTextMessage(event) {
     const loc = LOCATIONS[text];
     const data = getSatelliteData(loc.lat, loc.lon);
     const message = interpretData(data, text);
+    logToSheet(text, loc.lat, loc.lon, data);  // &#x1F4DD; 記錄到試算表
     replyToLINE(replyToken, message);
     return;
   }
@@ -660,6 +661,7 @@ function handleTextMessage(event) {
     const lon = parseFloat(coordMatch[2]);
     const data = getSatelliteData(lat, lon);
     const message = interpretData(data, lat + '&#xB0;N, ' + lon + '&#xB0;E');
+    logToSheet(lat + '&#xB0;N, ' + lon + '&#xB0;E', lat, lon, data);  // &#x1F4DD; 記錄到試算表
     replyToLINE(replyToken, message);
     return;
   }

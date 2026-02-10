@@ -493,7 +493,8 @@
 
             <h3>Step A：把程式碼貼到 GAS</h3>
             <ol class="deploy-steps">
-                <li>到 <a href="https://script.google.com/" target="_blank" style="color:#2a5298; font-weight:bold;">Google Apps Script</a> 開啟你的專案</li>
+                <li>開啟你在 Part 2 建立的 Google Sheet「低軌衛星LINE推播 - 查詢紀錄」</li>
+                <li>點擊上方選單 <strong>「擴充功能」</strong> &#x2192; <strong>「Apps Script」</strong></li>
                 <li>全選編輯器內容（<strong>Ctrl+A</strong>），貼上剛才複製的程式碼（<strong>Ctrl+V</strong>）</li>
                 <li>按 <strong>Ctrl+S</strong> 儲存</li>
             </ol>
@@ -629,6 +630,7 @@ function handleTextMessage(event) {
     const loc = LOCATIONS[text];
     const data = getSatelliteData(loc.lat, loc.lon);
     const message = interpretData(data, text);
+    logToSheet(text, loc.lat, loc.lon, data);
     replyToLINE(replyToken, message);
     return;
   }
@@ -641,6 +643,7 @@ function handleTextMessage(event) {
     if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
       const data = getSatelliteData(lat, lon);
       const message = interpretData(data, lat + '\u00B0N, ' + lon + '\u00B0E');
+      logToSheet(lat + '\u00B0N, ' + lon + '\u00B0E', lat, lon, data);
       replyToLINE(replyToken, message);
       return;
     }
@@ -774,6 +777,25 @@ function interpretData(data, locationName) {
     analysis.join('\\n') + '\\n' +
     '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n' +
     '\u{1F4E1} NASA POWER \u4F4E\u8ECB\u885B\u661F\u89C0\u6E2C';
+}
+
+// =============================================
+// \u{1F4DD} \u8A18\u9304\u67E5\u8A62\u7D50\u679C\u5230 Google Sheet
+// =============================================
+function logToSheet(locationName, lat, lon, data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const params = data.properties.parameter;
+  const dates = Object.keys(params.T2M);
+  const latestDate = dates[dates.length - 1];
+
+  sheet.appendRow([
+    new Date(),
+    locationName + ' (' + lat + ', ' + lon + ')',
+    params.T2M[latestDate],
+    params.PRECTOTCORR[latestDate],
+    params.RH2M[latestDate],
+    'LINE \u4F7F\u7528\u8005'
+  ]);
 }
 
 // === \u{1F9EA} \u6E2C\u8A66\u51FD\u5F0F ===

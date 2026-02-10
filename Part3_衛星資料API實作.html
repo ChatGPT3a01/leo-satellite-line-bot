@@ -647,8 +647,35 @@ function getSatelliteData(lat, lon) {
             </div>
         </div>
 
-        <!-- Slide 7: 測試 API 回傳 -->
+        <!-- Slide 7: 記錄到 Google Sheet -->
         <div class="slide" id="slide-7">
+            <div class="content-card">
+                <h2>&#x1F4DD; 自動記錄到 Google Sheet（第三段：資料蒐集）</h2>
+                <p>每次查詢衛星資料時，自動把結果寫入綁定的試算表，方便日後分析：</p>
+                <pre><code>// === &#x1F4DD; 記錄查詢結果到 Google Sheet ===
+function logToSheet(locationName, lat, lon, data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const params = data.properties.parameter;
+  const dates = Object.keys(params.T2M);
+  const latestDate = dates[dates.length - 1];
+
+  sheet.appendRow([
+    new Date(),
+    locationName + ' (' + lat + ', ' + lon + ')',
+    params.T2M[latestDate],
+    params.PRECTOTCORR[latestDate],
+    params.RH2M[latestDate],
+    'LINE 使用者'
+  ]);
+}</code></pre>
+                <div class="box info">
+                    <p>&#x1F4A1; 因為我們從 Google Sheet 的擴充功能建立 Apps Script，所以可以直接用 <code>SpreadsheetApp.getActiveSpreadsheet()</code> 存取綁定的試算表，每次查詢都會自動新增一筆紀錄！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: 測試 API 回傳 -->
+        <div class="slide" id="slide-8">
             <div class="content-card">
                 <h2>&#x1F9EA; 測試看看！API 回傳什麼？</h2>
                 <p>先加一個測試函式，看看 API 回傳的資料長什麼樣：</p>
@@ -672,8 +699,8 @@ function testAPI() {
             </div>
         </div>
 
-        <!-- Slide 8: JSON 資料結構 -->
-        <div class="slide" id="slide-8">
+        <!-- Slide 9: JSON 資料結構 -->
+        <div class="slide" id="slide-9">
             <div class="content-card">
                 <h2>&#x1F4CB; 讀懂 API 回傳的 JSON 資料</h2>
                 <p>API 回傳的資料結構大致如下（簡化版）：</p>
@@ -709,8 +736,8 @@ function testAPI() {
             </div>
         </div>
 
-        <!-- Slide 9: 小結 -->
-        <div class="slide" id="slide-9">
+        <!-- Slide 10: 小結 -->
+        <div class="slide" id="slide-10">
             <div class="content-card">
                 <h2>&#x2705; Part 3 完成！</h2>
                 <div class="concept-grid">

@@ -314,6 +314,7 @@ function handleTextMessage(event) {
     const loc = LOCATIONS[text];
     const data = getSatelliteData(loc.lat, loc.lon);
     const message = interpretData(data, text);
+    logToSheet(text, loc.lat, loc.lon, data);
     replyToLINE(replyToken, message);
     return;
   }
@@ -324,6 +325,7 @@ function handleTextMessage(event) {
     const lon = parseFloat(coordMatch[2]);
     const data = getSatelliteData(lat, lon);
     const message = interpretData(data, lat + '°N, ' + lon + '°E');
+    logToSheet(lat + '°N, ' + lon + '°E', lat, lon, data);
     replyToLINE(replyToken, message);
     return;
   }
@@ -413,6 +415,23 @@ function interpretData(data, locationName) {
     '\n' + analysis.map(a => '• ' + a).join('\n') +
     '\n━━━━━━━━━━━━' +
     '\n📡 資料來源：NASA POWER（低軌衛星觀測）';
+}
+
+// === 📝 記錄查詢結果到 Google Sheet ===
+function logToSheet(locationName, lat, lon, data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const params = data.properties.parameter;
+  const dates = Object.keys(params.T2M);
+  const latestDate = dates[dates.length - 1];
+
+  sheet.appendRow([
+    new Date(),
+    locationName + ' (' + lat + ', ' + lon + ')',
+    params.T2M[latestDate],
+    params.PRECTOTCORR[latestDate],
+    params.RH2M[latestDate],
+    'LINE 使用者'
+  ]);
 }
 
 // === 🧪 測試 ===
